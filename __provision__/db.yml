@@ -1,0 +1,31 @@
+---
+- name: Install DB server
+  hosts: dbservers default
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Install postgresql
+      apt: name={{ item }}
+      with_items:
+        - postgresql
+        - libpq-dev
+        - python-psycopg2
+
+
+- name: Create DB
+  hosts: dbservers default
+  become: yes
+  become_user: postgres
+  tasks:
+    - name: Ensure database is created
+      postgresql_db: name={{ db_name }}
+
+    - name: Ensure user has access to database
+      postgresql_user: db={{ db_name }} name={{ db_user }} password={{ db_password }} priv=ALL
+
+    - name: Ensure user does not have unnecessary privilege
+      postgresql_user: name={{ db_name }} role_attr_flags=NOSUPERUSER,NOCREATEDB
+  
+    - name: Ensure no other user can access the database
+      postgresql_privs: db={{ db_name }} role=PUBLIC type=database priv=ALL state=absent
+

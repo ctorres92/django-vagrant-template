@@ -1,0 +1,8 @@
+# Configuration for development environment
+project_name: project
+app_directory: /vagrant
+app_user: vagrant
+db_name: project
+db_user: project
+db_password: project
+server_name: project

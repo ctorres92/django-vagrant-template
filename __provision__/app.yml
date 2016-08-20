@@ -1,0 +1,37 @@
+- name: Web server configuration
+  hosts: appservers default
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: config nginx
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+
+    - name: restart nginx
+      service: name=nginx state=restarted
+
+
+- name: Supervisor-Gunicorn configuration
+  hosts: appservers default
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Generate supervisor gunicorn configuration
+      template:
+        src: templates/gunicorn.conf.j2
+        dest: /etc/supervisor/conf.d/gunicorn.conf
+
+    - name: Start/restart supervisord
+      supervisorctl: name=gunicorn state=restarted
+
+
+- name: Python model migrations
+  hosts: appservers default
+  become: yes
+  become_method: sudo
+  vars:
+    user: "{{ app_user }}"
+  tasks:
+    - name: run django model migrations
+      django_manage: command=migrate app_path={{ app_directory }}

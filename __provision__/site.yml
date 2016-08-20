@@ -1,0 +1,4 @@
+---
+- include: shared.yml
+- include: db.yml
+- include: app.yml

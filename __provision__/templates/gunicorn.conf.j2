@@ -1,0 +1,12 @@
+[program:gunicorn]
+{% if ('development' not in group_names) %}
+command=/usr/local/bin/gunicorn --workers=2 --bind=127.0.0.1:8000 --timeout=60 {{ project_name }}.wsgi
+{% else %}
+command=/usr/local/bin/gunicorn --workers=2 --bind=127.0.0.1:8000 --reload --timeout=60 {{ project_name }}.wsgi
+{% endif %}
+directory={{ app_directory }}
+user={{ app_user }}
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/supervisor/gunicorn.log
+stderr_logfile=/var/log/supervisor/gunicorn.error.log

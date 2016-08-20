@@ -1,0 +1,79 @@
+---
+- name: Base packages
+  hosts: all
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Clear apt lists cache
+      file:
+        path: /var/lib/apt/lists
+        state: absent
+
+    - name: Create needed apt lists cache directories
+      file:
+        path: '{{ item }}'
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+      with_items:
+        - /var/lib/apt/lists
+        - /var/lib/apt/lists/partials
+
+    - name: Update apt
+      apt: update_cache=yes
+
+    - name: Install essential
+      apt: name={{ item }}
+      with_items:
+        - git
+
+    - name: Install python3
+      apt: name={{ item }}
+      with_items:
+        - python3
+        - python3-pip
+
+
+- name: Supervisor
+  hosts: default appservers
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Install supervisor
+      apt: name=supervisor
+
+
+- name: Web server
+  hosts: default appservers
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Add nginx repository
+      apt_repository:
+        repo: ppa:nginx/stable
+
+    - name: Install nginx
+      apt:
+        name: nginx=1.10.1-0+trusty0
+        state: present
+
+
+- name: Upgrade pip3
+  hosts: appservers jobservers default
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Upgrade pip3 version
+      pip: name=pip executable=pip3 extra_args='--upgrade'
+
+
+- name: Python requirements
+  hosts: appservers jobservers default
+  become: yes
+  become_method: sudo
+  vars:
+    user: "{{ app_user }}"
+  tasks:
+    - name: Install requirements.txt dependencies
+      pip: requirements={{ app_directory }}/requirements.txt executable=pip3 extra_args='--upgrade'
