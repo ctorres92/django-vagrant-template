@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "512"
-    vb.name = "Santos"
+    vb.name = "Project"
     vb.cpus = 2
   end
 
